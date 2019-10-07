@@ -12,7 +12,6 @@ from napalm.base.utils import py23_compat
 from napalm.base import NetworkDriver
 from napalm.base.exceptions import ConnectionException
 
-
 class OpenGearDriver(NetworkDriver):
 
     def __init__(self, hostname, username, password, timeout=60, optional_args=None):
@@ -97,3 +96,78 @@ class OpenGearDriver(NetworkDriver):
             return {'is_alive': False}
 
         return {'is_alive': False}
+
+    def get_interfaces(self):
+        iface_entries = ['eth0', 'eth1']
+
+        interfaces = {}
+        for i, entry in enumerate(iface_entries):
+            iface_link = self._send_command("ip link show " + str(entry))
+
+            # init interface entry with default values
+            iface = {
+                'is_enabled':   True,
+                'is_up':        False,
+                'description':  '',
+                'mac_address':  '',
+                'last_flapped': 0.0,  # in seconds
+                'speed':        0,    # in megabits
+            }
+            for line in iface_link.splitlines():
+                if 'state UP' in line:
+                    iface['is_up'] = True
+                elif 'link/ether' in line:
+                    iface['mac_address'] = line.split()[1].strip()
+
+            iface_eth = self._send_command("ethtool " + str(entry))
+            for line in iface_eth.splitlines():
+                if 'Speed:' in line:
+                    iface['speed'] = line.split()[1].strip('Mb/s')
+
+            interfaces[entry] = iface
+
+        return interfaces
+
+    def get_facts(self):
+        facts = {
+            'uptime': -1,
+            'vendor': u'Unknown',
+            'os_version': 'Unknown',
+            'serial_number': 'Unknown',
+            'model': 'Unknown',
+            'hostname': 'Unknown',
+            'fqdn': 'Unknown',
+            'interface_list': [],
+        }
+
+        show_ver = self._send_command("cat /etc/version; config -g config.system.model")
+        # OpenGear/IM72xx Version 4.3.1 75de795e -- Wed Sep 12 18:12:26 UTC 2018
+
+        for line in show_ver.splitlines():
+            if line.startswith('OpenGear/'):
+                facts['vendor'] = line.split('/')[0].strip()
+                facts['os_version'] = line.split()[2].strip()
+            elif line.startswith('config.system.model'):
+                facts['model'] = line.split()[1].strip()
+
+        facts['serial_number'] = self._send_command("showserial")
+
+        show_int = self._send_command("ifconfig |awk '/^[a-z]/ {print $1}'")
+        for i, int in enumerate(show_int.split('\n')):
+            facts['interface_list'].append(int)
+
+        # get uptime from proc
+        config = self._send_command("cat /proc/uptime")
+        for line in config.splitlines():
+            facts['uptime'] = line.split()[0]
+            break
+
+        # get hostname from running config
+        config = self._send_command("config -g config.system.name")
+        for line in config.splitlines():
+            if line.startswith('config.system.name'):
+                facts['fqdn'] = re.sub('^config.system.name ', '', line)
+                facts['hostname'] = facts['fqdn'].split('.')[0]
+                break
+
+        return facts
