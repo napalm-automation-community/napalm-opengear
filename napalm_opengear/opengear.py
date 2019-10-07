@@ -97,6 +97,37 @@ class OpenGearDriver(NetworkDriver):
 
         return {'is_alive': False}
 
+    def get_interfaces(self):
+        iface_entries = ['eth0', 'eth1']
+
+        interfaces = {}
+        for i, entry in enumerate(iface_entries):
+            iface_link = self._send_command("ip link show " + str(entry))
+
+            # init interface entry with default values
+            iface = {
+                'is_enabled':   True,
+                'is_up':        False,
+                'description':  '',
+                'mac_address':  '',
+                'last_flapped': 0.0,  # in seconds
+                'speed':        0,    # in megabits
+            }
+            for line in iface_link.splitlines():
+                if 'state UP' in line:
+                    iface['is_up'] = True
+                elif 'link/ether' in line:
+                    iface['mac_address'] = line.split()[1].strip()
+
+            iface_eth = self._send_command("ethtool " + str(entry))
+            for line in iface_eth.splitlines():
+                if 'Speed:' in line:
+                    iface['speed'] = line.split()[1].strip('Mb/s')
+
+            interfaces[entry] = iface
+
+        return interfaces
+
     def get_facts(self):
         facts = {
             'uptime': -1,
