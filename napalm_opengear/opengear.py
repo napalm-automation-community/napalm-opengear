@@ -152,6 +152,8 @@ class OpenGearDriver(NetworkDriver):
             elif line.startswith('config.system.model'):
                 facts['model'] = line.split()[1].strip()
 
+        facts['serial_number'] = self._send_command("showserial")
+
         show_int = self._send_command("ifconfig |awk '/^[a-z]/ {print $1}'")
         for i, int in enumerate(show_int.split('\n')):
             facts['interface_list'].append(int)
