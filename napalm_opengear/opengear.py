@@ -12,7 +12,6 @@ from napalm.base.utils import py23_compat
 from napalm.base import NetworkDriver
 from napalm.base.exceptions import ConnectionException
 
-
 class OpenGearDriver(NetworkDriver):
 
     def __init__(self, hostname, username, password, timeout=60, optional_args=None):
@@ -97,3 +96,47 @@ class OpenGearDriver(NetworkDriver):
             return {'is_alive': False}
 
         return {'is_alive': False}
+
+    def get_facts(self):
+        facts = {
+            'uptime': -1,
+            'vendor': u'Unknown',
+            'os_version': 'Unknown',
+            'serial_number': 'Unknown',
+            'model': 'Unknown',
+            'hostname': 'Unknown',
+            'fqdn': 'Unknown',
+            'interface_list': [],
+        }
+
+        show_ver = self._send_command("cat /etc/version; config -g config.system.model")
+        # OpenGear/IM72xx Version 4.3.1 75de795e -- Wed Sep 12 18:12:26 UTC 2018
+
+        for line in show_ver.splitlines():
+            if line.startswith('OpenGear/'):
+                facts['vendor'] = line.split('/')[0].strip()
+                facts['os_version'] = line.split()[2].strip()
+            # elif line.startswith('Serial Number'):
+            #     facts['serial_number'] = line.split(': ')[1].strip()
+            elif line.startswith('config.system.model'):
+                facts['model'] = line.split()[1].strip()
+
+        show_int = self._send_command("ifconfig |awk '/^[a-z]/ {print $1}'")
+        for i, int in enumerate(show_int.split('\n')):
+            facts['interface_list'].append(int)
+
+        # get uptime from proc
+        config = self._send_command("cat /proc/uptime")
+        for line in config.splitlines():
+            facts['uptime'] = line.split()[0]
+            break
+
+        # get hostname from running config
+        config = self._send_command("config -g config.system.name")
+        for line in config.splitlines():
+            if line.startswith('config.system.name'):
+                facts['fqdn'] = re.sub('^config.system.name ', '', line)
+                facts['hostname'] = facts['fqdn'].split('.')[0]
+                break
+
+        return facts
