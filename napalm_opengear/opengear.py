@@ -131,7 +131,7 @@ class OpenGearDriver(NetworkDriver):
         return {'is_alive': False}
 
     def _get_interface_list(self):
-        show_int = self._send_command("ifconfig |awk '/^[a-z]/ {print $1}'")
+        show_int = self._send_command("ip link|awk '/^[0-9]: [a-z]/ {print $2}'|tr -d :")
         interface_list = []
         for i, int in enumerate(show_int.split('\n')):
             interface_list.append(int)
