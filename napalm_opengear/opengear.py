@@ -129,8 +129,15 @@ class OpenGearDriver(NetworkDriver):
 
         return {'is_alive': False}
 
+    def _get_interface_list(self):
+        show_int = self._send_command("ifconfig |awk '/^[a-z]/ {print $1}'")
+        interface_list = []
+        for i, int in enumerate(show_int.split('\n')):
+            interface_list.append(int)
+        return interface_list
+
     def get_interfaces(self):
-        iface_entries = ['eth0', 'eth1']
+        iface_entries = self._get_interface_list()
 
         interfaces = {}
         for i, entry in enumerate(iface_entries):
@@ -184,9 +191,7 @@ class OpenGearDriver(NetworkDriver):
 
         facts['serial_number'] = self._send_command("showserial")
 
-        show_int = self._send_command("ifconfig |awk '/^[a-z]/ {print $1}'")
-        for i, int in enumerate(show_int.split('\n')):
-            facts['interface_list'].append(int)
+        facts['interface_list'] = self._get_interface_list()
 
         # get uptime from proc
         config = self._send_command("cat /proc/uptime")
