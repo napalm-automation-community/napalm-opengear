@@ -147,8 +147,6 @@ class OpenGearDriver(NetworkDriver):
             if line.startswith('OpenGear/'):
                 facts['vendor'] = line.split('/')[0].strip()
                 facts['os_version'] = line.split()[2].strip()
-            # elif line.startswith('Serial Number'):
-            #     facts['serial_number'] = line.split(': ')[1].strip()
             elif line.startswith('config.system.model'):
                 facts['model'] = line.split()[1].strip()
 
