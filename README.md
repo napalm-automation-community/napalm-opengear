@@ -11,6 +11,7 @@ NAPALM driver for Opengear Linux
 * open
 * get_facts
 * get_interfaces
+* get_interfaces_ip
 
 
 ### Missing APIs.
@@ -41,7 +42,6 @@ NAPALM driver for Opengear Linux
 * get_bgp_neighbors_detail
 * get_environment
 * get_interfaces_counters
-* get_interfaces_ip
 * get_lldp_neighbors
 * get_lldp_neighbors_detail
 * get_mac_address_table

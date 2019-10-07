@@ -3,6 +3,7 @@
 
 import re
 import socket
+from collections import defaultdict
 
 from napalm.base.helpers import textfsm_extractor
 from napalm.base.helpers import mac, ip
@@ -129,8 +130,15 @@ class OpenGearDriver(NetworkDriver):
 
         return {'is_alive': False}
 
+    def _get_interface_list(self):
+        show_int = self._send_command("ip link|awk '/^[0-9]: [a-z]/ {print $2}'|tr -d :")
+        interface_list = []
+        for i, int in enumerate(show_int.split('\n')):
+            interface_list.append(int)
+        return interface_list
+
     def get_interfaces(self):
-        iface_entries = ['eth0', 'eth1']
+        iface_entries = self._get_interface_list()
 
         interfaces = {}
         for i, entry in enumerate(iface_entries):
@@ -160,6 +168,33 @@ class OpenGearDriver(NetworkDriver):
 
         return interfaces
 
+    def get_interfaces_ip(self):
+        iface_entries = self._get_interface_list()
+
+        interfaces_ip = {}
+        for i, iface in enumerate(iface_entries):
+            iface_link = self._send_command("ip addr show " + str(iface))
+
+            # init interface entry with default values
+            addr = defaultdict(dict)
+            for line in iface_link.splitlines():
+                if 'inet ' in line:
+                    prefix = int(line.split()[1].split('/')[1])
+                    ip = line.split()[1].split('/')[0].strip()
+                    addr[u'ipv4'][ip] = {
+                        'prefix_length': prefix
+                    }
+                if 'inet6 ' in line:
+                    prefix = int(line.split()[1].split('/')[1])
+                    ip = line.split()[1].split('/')[0].strip()
+                    addr[u'ipv6'][ip] = {
+                        'prefix_length': prefix
+                    }
+
+            interfaces_ip[iface] = addr
+
+        return interfaces_ip
+
     def get_facts(self):
         facts = {
             'uptime': -1,
@@ -184,9 +219,7 @@ class OpenGearDriver(NetworkDriver):
 
         facts['serial_number'] = self._send_command("showserial")
 
-        show_int = self._send_command("ifconfig |awk '/^[a-z]/ {print $1}'")
-        for i, int in enumerate(show_int.split('\n')):
-            facts['interface_list'].append(int)
+        facts['interface_list'] = self._get_interface_list()
 
         # get uptime from proc
         config = self._send_command("cat /proc/uptime")
