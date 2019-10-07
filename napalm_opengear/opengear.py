@@ -3,6 +3,7 @@
 
 import re
 import socket
+from collections import defaultdict
 
 from napalm.base.helpers import textfsm_extractor
 from napalm.base.helpers import mac, ip
@@ -166,6 +167,33 @@ class OpenGearDriver(NetworkDriver):
             interfaces[entry] = iface
 
         return interfaces
+
+    def get_interfaces_ip(self):
+        iface_entries = self._get_interface_list()
+
+        interfaces_ip = {}
+        for i, iface in enumerate(iface_entries):
+            iface_link = self._send_command("ip addr show " + str(iface))
+
+            # init interface entry with default values
+            addr = defaultdict(dict)
+            for line in iface_link.splitlines():
+                if 'inet ' in line:
+                    prefix = int(line.split()[1].split('/')[1])
+                    ip = line.split()[1].split('/')[0].strip()
+                    addr[u'ipv4'][ip] = {
+                        'prefix_length': prefix
+                    }
+                if 'inet6 ' in line:
+                    prefix = int(line.split()[1].split('/')[1])
+                    ip = line.split()[1].split('/')[0].strip()
+                    addr[u'ipv6'][ip] = {
+                        'prefix_length': prefix
+                    }
+
+            interfaces_ip[iface] = addr
+
+        return interfaces_ip
 
     def get_facts(self):
         facts = {
