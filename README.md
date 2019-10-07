@@ -9,6 +9,9 @@ NAPALM driver for Opengear Linux
 * get_config
 * is_alive
 * open
+* get_facts
+* get_interfaces
+
 
 ### Missing APIs.
 
@@ -37,8 +40,6 @@ NAPALM driver for Opengear Linux
 * traceroute
 * get_bgp_neighbors_detail
 * get_environment
-* get_facts
-* get_interfaces
 * get_interfaces_counters
 * get_interfaces_ip
 * get_lldp_neighbors
