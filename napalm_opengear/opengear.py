@@ -49,6 +49,38 @@ class OpenGearDriver(NetworkDriver):
     def close(self):
         self._netmiko_close()
 
+    def _get_sshkeys(self, username):
+        # There's an ;echo because OpenGear don't put a \n at the end of authorized_keys
+
+        sshkeys = []
+        try:
+            for line in self._send_command("cat /etc/config/users/" + username + "/.ssh/authorized_keys;echo").splitlines():
+                if 'No such file' in line:
+                    break
+                sshkeys.append(line)
+        except (RuntimeError, TypeError, NameError):
+            pass
+        return sshkeys
+
+    def get_users(self):
+        command = "config -g config.users|grep username"
+        output = self._send_command(command)
+
+        users = {}
+        for line in output.splitlines():
+            user = {
+                'password': '',
+                'sshkeys': [],
+                'level': 0,
+            }
+            username = line.split()[1]
+            # returns a list, or None
+            user['sshkeys'] = self._get_sshkeys(username)
+
+            users[username] = user
+
+        return users
+
     def get_arp_table(self, vrf=u''):
         if vrf:
             msg = "VRF support has not been added for this getter on this platform."
