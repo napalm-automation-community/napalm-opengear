@@ -112,7 +112,6 @@ class OpenGearDriver(NetworkDriver):
             raise MergeConfigException('filename or config param must be provided.')
 
         self._send_command('cp /etc/config/config.xml /etc/config/config-napalm.bak')
-        self.loaded = True
 
         if filename is not None:
             with open(filename, 'r') as f:
@@ -123,13 +122,15 @@ class OpenGearDriver(NetworkDriver):
         if not isinstance(candidate, list):
             candidate = [candidate]
 
-        candidate = [line for line in candidate if line]
+        candidate = ["=".join(line.split(" ", 1)) for line in candidate if line]
         for command in candidate:
             if 'sudo config -s' not in command:
                 command = 'sudo config -s {0}'.format(command)
+                print(command)
             output = self._send_command(command)
             if "error" in output or "not found" in output:
                 raise MergeConfigException("Command '{0}' cannot be applied.".format(command))
+        self.loaded = True
 
     def get_config(self, retrieve='all'):
         config = {
