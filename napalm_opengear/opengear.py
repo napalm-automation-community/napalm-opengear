@@ -124,8 +124,8 @@ class OpenGearDriver(NetworkDriver):
 
         candidate = [line for line in candidate if line]
         for command in candidate:
-            if 'sudo' not in command:
-                command = 'sudo {0}'.format(command)
+            if 'sudo config -s' not in command:
+                command = 'sudo config -s {0}'.format(command)
             output = self._send_command(command)
             if "error" in output or "not found" in output:
                 raise MergeConfigException("Command '{0}' cannot be applied.".format(command))
