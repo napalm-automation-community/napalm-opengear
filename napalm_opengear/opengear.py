@@ -122,8 +122,13 @@ class OpenGearDriver(NetworkDriver):
 
     def discard_config(self):
         if self.loaded:
-            self._send_command('mv /etc/config.xml-napalm.bak /etc/config/config.xml')
+            self._send_command('cp /etc/config/config-napalm.bak /etc/config/config.xml')
             self.loaded = False
+
+    def compare_config(self):
+        if self.loaded:
+            diff = self._send_command('config -g config -p /etc/config/config-napalm.bak > /tmp/config.g.bak ; config -g config -p /etc/config/config.xml > /tmp/config.g ; diff -u /tmp/config.g{,.bak}')
+        return diff
 
     def is_alive(self):
         null = chr(0)
