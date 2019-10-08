@@ -9,7 +9,11 @@ from napalm.base.helpers import mac, ip
 from napalm.base.netmiko_helpers import netmiko_args
 
 from napalm.base import NetworkDriver
-from napalm.base.exceptions import ConnectionException
+from napalm.base.exceptions import (
+    ConnectionException,
+    MergeConfigException,
+    )
+
 
 class OpenGearDriver(NetworkDriver):
 
@@ -102,6 +106,30 @@ class OpenGearDriver(NetworkDriver):
             table.append(entry)
 
         return table
+
+    def load_merge_candidate(self, filename=None, config=None):
+        if not filename and not config:
+            raise MergeConfigException('filename or config param must be provided.')
+
+        self.loaded = True
+
+        if filename is not None:
+            with open(filename, 'r') as f:
+                candidate = f.readlines()
+        else:
+            candidate = config
+
+        if not isinstance(candidate, list):
+            candidate = [candidate]
+
+        candidate = [line for line in candidate if line]
+        for command in candidate:
+            if 'sudo' not in command:
+                command = 'sudo {0}'.format(command)
+            output = self._send_command(command)
+            if "error" in output or "not found" in output:
+                raise MergeConfigException("Command '{0}' cannot be applied.".format(command))
+
 
     def get_config(self, retrieve='all'):
         config = {
