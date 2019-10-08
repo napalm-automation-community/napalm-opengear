@@ -130,6 +130,12 @@ class OpenGearDriver(NetworkDriver):
             diff = self._send_command('config -g config -p /etc/config/config-napalm.bak > /tmp/config.g.bak ; config -g config -p /etc/config/config.xml > /tmp/config.g ; diff -u /tmp/config.g{,.bak}')
         return diff
 
+    def rollback(self):
+        if self.changed:
+            self._send_command('cp /etc/config/config-napalm.bak /etc/config/config.xml')
+            self.changed = False
+
+
     def is_alive(self):
         null = chr(0)
         if self.device is None:
