@@ -111,6 +111,7 @@ class OpenGearDriver(NetworkDriver):
         if not filename and not config:
             raise MergeConfigException('filename or config param must be provided.')
 
+        self._send_command('cp /etc/config/config.xml /etc/config/config-napalm.bak')
         self.loaded = True
 
         if filename is not None:
