@@ -120,6 +120,11 @@ class OpenGearDriver(NetworkDriver):
             self._send_command('config -a')
             self.changed = True
 
+    def discard_config(self):
+        if self.loaded:
+            self._send_command('mv /etc/config.xml-napalm.bak /etc/config/config.xml')
+            self.loaded = False
+
     def is_alive(self):
         null = chr(0)
         if self.device is None:
