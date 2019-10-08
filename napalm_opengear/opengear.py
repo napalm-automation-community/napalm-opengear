@@ -1,14 +1,12 @@
 
 """Napalm driver for OpenGear Linux"""
 
-import re
 import socket
 from collections import defaultdict
 
 from napalm.base.helpers import textfsm_extractor
 from napalm.base.helpers import mac, ip
 from napalm.base.netmiko_helpers import netmiko_args
-from napalm.base.utils import py23_compat
 
 from napalm.base import NetworkDriver
 from napalm.base.exceptions import ConnectionException
