@@ -131,16 +131,21 @@ class OpenGearDriver(NetworkDriver):
             if "error" in output or "not found" in output:
                 raise MergeConfigException("Command '{0}' cannot be applied.".format(command))
 
-
     def get_config(self, retrieve='all'):
         config = {
             'startup': u'Not implemented',
             'running': u'',
-            'candidate': u'Not implemented',
+            'candidate': u'',
         }
 
+        # running comes from /etc/config/config.xml
         if retrieve in ['all', 'running']:
             config['running'] = self._send_command("config -g config")
+
+        # candidate comes from /etc/config/config.xml, also.
+        # The state is created with `cp` in discard_config()
+        if retrieve in ['all', 'candidate']:
+            config['candidate'] = self._send_command("config -g config")
 
         return config
 
