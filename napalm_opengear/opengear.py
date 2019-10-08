@@ -161,8 +161,11 @@ class OpenGearDriver(NetworkDriver):
 
     def compare_config(self):
         if self.loaded:
-            diff = self._send_command('config -g config -p /etc/config/config-napalm.bak > /tmp/config.g.bak ; config -g config -p /etc/config/config.xml > /tmp/config.g ; diff -u /tmp/config.g{,.bak}')
-        return diff
+            self._send_command('config -g config -p /etc/config/config-napalm.bak > /tmp/config.g.bak')
+            self._send_command('config -g config -p /etc/config/config.xml > /tmp/config.g')
+            diff = self._send_command('diff -u /tmp/config.g{,.bak}')
+            return diff
+        return ''
 
     def rollback(self):
         if self.changed:
