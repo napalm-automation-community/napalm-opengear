@@ -19,6 +19,8 @@ class OpenGearDriver(NetworkDriver):
         self.username = username
         self.password = password
         self.timeout = timeout
+        self.changed = False
+        self.loaded = False
 
         if optional_args is None:
             optional_args = {}
@@ -112,6 +114,11 @@ class OpenGearDriver(NetworkDriver):
             config['running'] = self._send_command("config -g config")
 
         return config
+
+    def commit_config(self, message=""):
+        if self.loaded:
+            self._send_command('config -a')
+            self.changed = True
 
     def is_alive(self):
         null = chr(0)
