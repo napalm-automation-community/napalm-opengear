@@ -1,17 +1,19 @@
 
 """Napalm driver for OpenGear Linux"""
 
-import re
 import socket
 from collections import defaultdict
 
 from napalm.base.helpers import textfsm_extractor
 from napalm.base.helpers import mac, ip
 from napalm.base.netmiko_helpers import netmiko_args
-from napalm.base.utils import py23_compat
 
 from napalm.base import NetworkDriver
-from napalm.base.exceptions import ConnectionException
+from napalm.base.exceptions import (
+    ConnectionException,
+    MergeConfigException,
+    )
+
 
 class OpenGearDriver(NetworkDriver):
 
@@ -21,6 +23,8 @@ class OpenGearDriver(NetworkDriver):
         self.username = username
         self.password = password
         self.timeout = timeout
+        self.changed = False
+        self.loaded = False
 
         if optional_args is None:
             optional_args = {}
@@ -103,17 +107,72 @@ class OpenGearDriver(NetworkDriver):
 
         return table
 
+    def load_merge_candidate(self, filename=None, config=None):
+        if not filename and not config:
+            raise MergeConfigException('filename or config param must be provided.')
+
+        self._send_command('cp /etc/config/config.xml /etc/config/config-napalm.bak')
+
+        if filename is not None:
+            with open(filename, 'r') as f:
+                candidate = f.readlines()
+        else:
+            candidate = config
+
+        if not isinstance(candidate, list):
+            candidate = [candidate]
+
+        candidate = ["=".join(line.split(" ", 1)) for line in candidate if line]
+        for command in candidate:
+            if 'sudo config -s' not in command:
+                command = 'sudo config -s {0}'.format(command)
+                print(command)
+            output = self._send_command(command)
+            if "error" in output or "not found" in output:
+                raise MergeConfigException("Command '{0}' cannot be applied.".format(command))
+        self.loaded = True
+
     def get_config(self, retrieve='all'):
         config = {
             'startup': u'Not implemented',
             'running': u'',
-            'candidate': u'Not implemented',
+            'candidate': u'',
         }
 
+        # running comes from /etc/config/config.xml
         if retrieve in ['all', 'running']:
             config['running'] = self._send_command("config -g config")
 
+        # candidate comes from /etc/config/config.xml, also.
+        # The state is created with `cp` in discard_config()
+        if retrieve in ['all', 'candidate']:
+            config['candidate'] = self._send_command("config -g config")
+
         return config
+
+    def commit_config(self, message=""):
+        if self.loaded:
+            self._send_command('config -a')
+            self.changed = True
+
+    def discard_config(self):
+        if self.loaded:
+            self._send_command('cp /etc/config/config-napalm.bak /etc/config/config.xml')
+            self.loaded = False
+
+    def compare_config(self):
+        if self.loaded:
+            self._send_command('config -g config -p /etc/config/config-napalm.bak > /tmp/config.g.bak')
+            self._send_command('config -g config -p /etc/config/config.xml > /tmp/config.g')
+            diff = self._send_command('diff -u /tmp/config.g{,.bak}')
+            return diff
+        return ''
+
+    def rollback(self):
+        if self.changed:
+            self._send_command('cp /etc/config/config-napalm.bak /etc/config/config.xml')
+            self.changed = False
+
 
     def is_alive(self):
         null = chr(0)

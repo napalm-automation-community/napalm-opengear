@@ -12,16 +12,18 @@ NAPALM driver for Opengear Linux
 * get_facts
 * get_interfaces
 * get_interfaces_ip
+* commit_config
+* compare_config
+* discard_config
+* rollback
+* load_merge_candidate
 
 
 ### Missing APIs.
 
 * cli
-* commit_config
-* compare_config
 * compliance_report
 * connection_tests
-* discard_config
 * get_bgp_config
 * get_bgp_neighbors
 * get_firewall_policies
@@ -31,12 +33,10 @@ NAPALM driver for Opengear Linux
 * get_probes_config
 * get_probes_results
 * get_route_to
-* load_merge_candidate
 * load_replace_candidate
 * load_template
 * post_connection_tests
 * pre_connection_tests
-* rollback
 * ping
 * traceroute
 * get_bgp_neighbors_detail
