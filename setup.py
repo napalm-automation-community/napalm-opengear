@@ -19,7 +19,7 @@ def parse_reqs(file_path):
 
 setup(
 	name="napalm-opengear",
-	version="0.2.0",
+	version="0.2.1",
 	packages=find_packages(),
 	author="Charlie Allom",
 	author_email="charlie@evilforbeginners.com",
