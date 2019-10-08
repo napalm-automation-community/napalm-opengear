@@ -1,6 +1,7 @@
 
 """Napalm driver for OpenGear Linux"""
 
+import re
 import socket
 from collections import defaultdict
 
