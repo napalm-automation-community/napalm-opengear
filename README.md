@@ -2,6 +2,19 @@
 
 NAPALM driver for Opengear Linux
 
+Your Jinja2 might look like:
+```jinja2
+config.system.name {{ inventory_hostname }}
+```
+
+This is turned into `sudo -s config.system.name=...`
+
+We use `cp` to store a state between "running" and "startup". Diffs are created by moving `config.xml` around and seeing what changed.
+
+Do not edit `config.xml` outside of NAPALM or you will be missing changes.
+
+Editing the XML or diffing the XML is not supported, this may limit the amount of configuration we can provide in a 2-dimensional "set" like structure.
+
 ### Implemented APIs
 
 * close
