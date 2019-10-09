@@ -125,8 +125,8 @@ class OpenGearDriver(NetworkDriver):
 
         candidate = ["=".join(line.split(" ", 1)) for line in candidate if line]
         for command in candidate:
-            if 'sudo config -s' not in command:
-                command = 'sudo config -s {0}'.format(command)
+            if 'sudo config' not in command:
+                command = 'sudo config {0}'.format(command)
                 print(command)
             output = self._send_command(command)
             if "error" in output or "not found" in output:
