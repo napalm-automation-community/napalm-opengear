@@ -5,9 +5,14 @@ NAPALM driver for Opengear Linux
 Your Jinja2 might look like:
 ```jinja2
 -s config.system.name {{ inventory_hostname }}
+-d grep config.delayed
 ```
 
-This is turned into `sudo -s config.system.name=...`
+This is turned into
+```
+sudo config -s config.system.name=...
+sudo config -d config.delayed
+```
 
 We use `cp` to store a state between "running" and "startup". Diffs are created by moving `config.xml` around and seeing what changed.
 
