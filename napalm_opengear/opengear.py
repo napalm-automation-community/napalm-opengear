@@ -165,7 +165,7 @@ class OpenGearDriver(NetworkDriver):
         if self.loaded:
             self._send_command('config -g config -p /etc/config/config-napalm.bak > /tmp/config.g.bak')
             self._send_command('config -g config -p /etc/config/config.xml > /tmp/config.g')
-            diff = self._send_command('diff -u /tmp/config.g{,.bak}')
+            diff = self._send_command('diff -u /tmp/config.g{.bak,}')
             return diff
         return ''
 
