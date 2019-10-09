@@ -4,7 +4,7 @@ NAPALM driver for Opengear Linux
 
 Your Jinja2 might look like:
 ```jinja2
-config.system.name {{ inventory_hostname }}
+-s config.system.name {{ inventory_hostname }}
 ```
 
 This is turned into `sudo -s config.system.name=...`
