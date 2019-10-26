@@ -125,9 +125,12 @@ class OpenGearDriver(NetworkDriver):
 
         candidate = ["=".join(line.split(" ", 1)) for line in candidate if line]
         for command in candidate:
-            if 'sudo config -s' not in command:
-                command = 'sudo config -s {0}'.format(command)
-                print(command)
+            if '=' not in command:  # assignment via `=` means set a vaule
+                command = 'sudo config -d "{0}"'.format(command.strip())
+                # print(command)
+            else:  # no assignment, means delete the value
+                command = 'sudo config -s "{0}"'.format(command.strip())
+                # print(command)
             output = self._send_command(command)
             if "error" in output or "not found" in output:
                 raise MergeConfigException("Command '{0}' cannot be applied.".format(command))
