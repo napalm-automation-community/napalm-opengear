@@ -12,6 +12,8 @@ This is turned into
 sudo config -s config.system.name=...
 ```
 
+Anything without a value (just a key like `config.delayed`) will be deleted via `config -d $key`.
+
 We use `cp` to store a state between "running" and "startup". Diffs are created by moving `config.xml` around and seeing what changed.
 
 Do not edit `config.xml` outside of NAPALM or you will be missing changes.
