@@ -35,6 +35,7 @@ Editing the XML or diffing the XML is not supported, this may limit the amount o
 * discard_config
 * rollback
 * load_merge_candidate
+* get_users
 
 
 ### Missing APIs.
@@ -67,5 +68,4 @@ Editing the XML or diffing the XML is not supported, this may limit the amount o
 * get_ntp_servers
 * get_ntp_stats
 * get_snmp_information
-* get_users
 * [...]
