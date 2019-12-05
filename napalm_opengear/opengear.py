@@ -45,6 +45,13 @@ class OpenGearDriver(NetworkDriver):
         except (socket.error, EOFError) as e:
             raise ConnectionException(str(e))
 
+    def cli(self, cmd):
+        """send some commands via sudo."""
+        output = self._send_command('sudo {0}'.format(cmd.strip()))
+
+        return output
+
+
     def open(self):
         """Open a connection to the device."""
         self.device = self._netmiko_open(

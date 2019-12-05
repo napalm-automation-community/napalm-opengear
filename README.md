@@ -36,11 +36,11 @@ Editing the XML or diffing the XML is not supported, this may limit the amount o
 * rollback
 * load_merge_candidate
 * get_users
+* cli
 
 
 ### Missing APIs.
 
-* cli
 * compliance_report
 * connection_tests
 * get_bgp_config
