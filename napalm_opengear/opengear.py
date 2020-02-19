@@ -125,23 +125,23 @@ class OpenGearDriver(NetworkDriver):
             with open(filename, 'r') as f:
                 candidate = f.readlines()
         else:
-            candidate = config
+            candidate = config.splitlines()
 
         if not isinstance(candidate, list):
             candidate = [candidate]
 
         candidate = ["=".join(line.split(" ", 1)) for line in candidate if line]
-        for command in candidate:
-            if command.strip(): # skip blank lines from creating a `config -d ""`
-                if '=' not in command:  # assignment via `=` means set a vaule
-                    command = 'sudo config -d "{0}"'.format(command.strip())
-                    # print(command)
+        command = 'sudo config'
+        for line in candidate:
+            if line.strip(): # skip blank lines from creating a `config -d ""`
+                if '=' not in line:  # assignment via `=` means set a vaule
+                    command += ' -d "{0}"'.format(line.strip())
                 else:  # no assignment, means delete the value
-                    command = 'sudo config -s "{0}"'.format(command.strip())
-                    # print(command)
-                output = self._send_command(command)
-                if "error" in output or "not found" in output:
-                    raise MergeConfigException("Command '{0}' cannot be applied.".format(command))
+                    command += ' -s "{0}"'.format(line.strip())
+        command += ' -r serialconfig'
+        output = self._send_command(command)
+        if "error" in output or "not found" in output:
+            raise MergeConfigException("Command '{0}' cannot be applied.".format(command))
         self.loaded = True
 
     def get_config(self, retrieve='all'):
