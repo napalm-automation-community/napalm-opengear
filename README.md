@@ -69,3 +69,12 @@ Editing the XML or diffing the XML is not supported, this may limit the amount o
 * get_ntp_stats
 * get_snmp_information
 * [...]
+
+## How to release
+
+```
+git tag v0.3.2 <commit hash>
+git push --tags
+```
+
+Actions should take care of the rest and cut a release and push it to pypi
