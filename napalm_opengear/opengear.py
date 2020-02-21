@@ -138,7 +138,6 @@ class OpenGearDriver(NetworkDriver):
                     command += ' -d "{0}"'.format(line.strip())
                 else:  # no assignment, means delete the value
                     command += ' -s "{0}"'.format(line.strip())
-        command += ' -r serialconfig'
         output = self._send_command(command)
         if "error" in output or "not found" in output:
             raise MergeConfigException("Command '{0}' cannot be applied.".format(command))
