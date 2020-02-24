@@ -137,7 +137,7 @@ class OpenGearDriver(NetworkDriver):
                 if '=' not in line:  # assignment via `=` means set a vaule
                     command += ' -d "{0}"'.format(line.strip())
                 else:  # no assignment, means delete the value
-                    command += ' -s "{0}"'.format(line.strip())
+                    command += " -s '{0}'".format(line.strip())
         output = self._send_command(command)
         if "error" in output or "not found" in output:
             raise MergeConfigException("Command '{0}' cannot be applied.".format(command))
