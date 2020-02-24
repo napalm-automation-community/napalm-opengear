@@ -33,17 +33,11 @@ class OpenGearDriver(NetworkDriver):
         self.netmiko_optional_args = netmiko_args(optional_args)
 
     def _send_command(self, command):
-        try:
-            if isinstance(command, list):
-                for cmd in command:
-                    output = self.device.send_command(cmd)
-                    if "% Invalid" not in output:
-                        break
-            else:
-                output = self.device.send_command(command)
-            return output
-        except (socket.error, EOFError) as e:
-            raise ConnectionException(str(e))
+        """Wrapper for Netmiko's send_command_timer method.
+           We use this because OpenGear prompt is weird.
+        """
+        return self.device.send_command_timing(command)
+
 
     def cli(self, cmd):
         """send some commands via sudo."""
