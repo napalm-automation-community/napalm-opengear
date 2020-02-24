@@ -123,7 +123,7 @@ class OpenGearDriver(NetworkDriver):
 
         if filename is not None:
             with open(filename, 'r') as f:
-                candidate = f.readlines()
+                candidate = [line.strip() for line in f if line.strip()]  # strip blanks
         else:
             candidate = config.splitlines()
 
