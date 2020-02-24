@@ -33,17 +33,11 @@ class OpenGearDriver(NetworkDriver):
         self.netmiko_optional_args = netmiko_args(optional_args)
 
     def _send_command(self, command):
-        try:
-            if isinstance(command, list):
-                for cmd in command:
-                    output = self.device.send_command(cmd)
-                    if "% Invalid" not in output:
-                        break
-            else:
-                output = self.device.send_command(command)
-            return output
-        except (socket.error, EOFError) as e:
-            raise ConnectionException(str(e))
+        """Wrapper for Netmiko's send_command_timer method.
+           We use this because OpenGear prompt is weird.
+        """
+        return self.device.send_command_timing(command)
+
 
     def cli(self, cmd):
         """send some commands via sudo."""
@@ -123,7 +117,7 @@ class OpenGearDriver(NetworkDriver):
 
         if filename is not None:
             with open(filename, 'r') as f:
-                candidate = f.readlines()
+                candidate = [line.strip() for line in f if line.strip()]  # strip blanks
         else:
             candidate = config.splitlines()
 
@@ -137,7 +131,7 @@ class OpenGearDriver(NetworkDriver):
                 if '=' not in line:  # assignment via `=` means set a vaule
                     command += ' -d "{0}"'.format(line.strip())
                 else:  # no assignment, means delete the value
-                    command += ' -s "{0}"'.format(line.strip())
+                    command += " -s '{0}'".format(line.strip())
         output = self._send_command(command)
         if "error" in output or "not found" in output:
             raise MergeConfigException("Command '{0}' cannot be applied.".format(command))
