@@ -36,7 +36,7 @@ class OpenGearDriver(NetworkDriver):
         """Wrapper for Netmiko's send_command_timer method.
            We use this because OpenGear prompt is weird.
         """
-        return self.device.send_command_timing(command)
+        return self.device.send_command_timing(command, delay_factor=4)
 
 
     def cli(self, cmd):
